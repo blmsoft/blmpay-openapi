@@ -1,6 +1,8 @@
 # BLMPay OpenAPI
 
-Official OpenAPI 3.1 specification for the BLMPay API v1.
+> **API V1 deprecation notice:** BLMPay API v1 is legacy and is scheduled to be retired on **15 November 2026 at 23:59 EAT**. New integrations must use **API v2 HMAC**.
+
+Official OpenAPI 3.1 specifications for BLMPay API v2 and legacy v1.
 
 This repository is the public source of truth for BLMPay developer-facing endpoints, authentication, request/response schemas, webhooks, payment flows, payout flows, payment links, invoices and USDT APIs.
 
@@ -20,7 +22,7 @@ X-BLMPay-Origin: https://example.com
 
 The host must match the integration domain saved on that API key. A mismatch may return `403 integration_domain_not_allowed`; a restricted key without an identifiable origin may return `403 integration_origin_required`.
 
-Existing legacy API keys without a saved domain remain backward compatible.
+Domain restriction remains enabled in API v2 as a secondary security control. Existing v1 keys remain usable only during the migration window.
 
 ## Security
 
