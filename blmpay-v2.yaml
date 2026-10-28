@@ -1,0 +1,414 @@
+openapi: 3.1.0
+info:
+  title: BLMPay REST API
+  version: 2.0.0
+  description: |
+    Official BLMPay API v2 for collections, payouts, payment links, invoices, webhooks and USDT.
+    API v2 uses HMAC-SHA256 request signing with timestamp and nonce replay protection.
+    Website/App credentials remain restricted to their configured integration domain as a secondary control.
+
+    API v1 is legacy and is scheduled to be retired on 15 November 2026 at 23:59 EAT.
+servers:
+  - url: https://pay.blmtec.co.tz/api/v2
+security:
+  - hmacAuthorization: []
+    hmacTimestamp: []
+    hmacNonce: []
+    hmacSignature: []
+tags:
+  - name: Payments
+  - name: Balance
+  - name: Payment Links
+  - name: Invoices
+  - name: Payouts
+  - name: Webhooks
+  - name: USDT
+paths:
+  /payments:
+    get:
+      tags: [Payments]
+      operationId: listPayments
+      parameters:
+        - {$ref: '#/components/parameters/Limit'}
+        - {$ref: '#/components/parameters/Offset'}
+        - name: status
+          in: query
+          schema: {type: string}
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+    post:
+      tags: [Payments]
+      operationId: createPayment
+      parameters:
+        - {$ref: '#/components/parameters/IdempotencyKeyOptional'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreatePaymentRequest'}
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+        '201': {$ref: '#/components/responses/Success'}
+  /payments/{reference}:
+    get:
+      tags: [Payments]
+      operationId: getPayment
+      parameters:
+        - {$ref: '#/components/parameters/Reference'}
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+        '404': {$ref: '#/components/responses/Error'}
+  /balance:
+    get:
+      tags: [Balance]
+      operationId: getBalance
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+  /payment-links:
+    get:
+      tags: [Payment Links]
+      operationId: listPaymentLinks
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+    post:
+      tags: [Payment Links]
+      operationId: createPaymentLink
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreatePaymentLinkRequest'}
+      responses:
+        '201': {$ref: '#/components/responses/Success'}
+  /invoices:
+    get:
+      tags: [Invoices]
+      operationId: listInvoices
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+    post:
+      tags: [Invoices]
+      operationId: createInvoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateInvoiceRequest'}
+      responses:
+        '201': {$ref: '#/components/responses/Success'}
+  /payouts:
+    get:
+      tags: [Payouts]
+      operationId: listPayouts
+      parameters:
+        - {$ref: '#/components/parameters/Limit'}
+        - {$ref: '#/components/parameters/Offset'}
+        - name: status
+          in: query
+          schema: {type: string}
+        - name: source
+          in: query
+          schema: {type: string, enum: [all, api, dashboard], default: all}
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+  /payouts/{reference}:
+    get:
+      tags: [Payouts]
+      operationId: getPayout
+      parameters:
+        - {$ref: '#/components/parameters/Reference'}
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+        '404': {$ref: '#/components/responses/Error'}
+  /payouts/fee:
+    get:
+      tags: [Payouts]
+      operationId: getPayoutFee
+      parameters:
+        - name: amount
+          in: query
+          required: true
+          schema: {type: integer, minimum: 1}
+        - name: channel
+          in: query
+          schema: {type: string, enum: [mobile, bank, selcompesa], default: mobile}
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+  /payouts/banks:
+    get:
+      tags: [Payouts]
+      operationId: listPayoutBanks
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+  /payouts/name-lookup:
+    post:
+      tags: [Payouts]
+      operationId: payoutNameLookup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/PayoutLookupRequest'}
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+  /payouts/send:
+    post:
+      tags: [Payouts]
+      operationId: createPayout
+      parameters:
+        - {$ref: '#/components/parameters/IdempotencyKeyRequired'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreatePayoutRequest'}
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+        '201': {$ref: '#/components/responses/Success'}
+  /webhooks:
+    get:
+      tags: [Webhooks]
+      operationId: listWebhooks
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+    post:
+      tags: [Webhooks]
+      operationId: createWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateWebhookRequest'}
+      responses:
+        '201': {$ref: '#/components/responses/Success'}
+  /webhooks/{id}:
+    delete:
+      tags: [Webhooks]
+      operationId: deleteWebhook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: integer, minimum: 1}
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+  /usdt/activate:
+    post:
+      tags: [USDT]
+      operationId: activateUsdt
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+        '201': {$ref: '#/components/responses/Success'}
+  /usdt/address:
+    get:
+      tags: [USDT]
+      operationId: getUsdtAddress
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+  /usdt/transfers:
+    get:
+      tags: [USDT]
+      operationId: listUsdtTransfers
+      parameters:
+        - name: page
+          in: query
+          schema: {type: integer, minimum: 1, default: 1}
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 100, default: 20}
+      responses:
+        '200': {$ref: '#/components/responses/Success'}
+  /usdt/withdrawals/quote:
+    post:
+      tags: [USDT]
+      operationId: quoteUsdtWithdrawal
+      parameters:
+        - {$ref: '#/components/parameters/IdempotencyKeyRequired'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [address, amount]
+              properties:
+                address: {type: string}
+                amount: {oneOf: [{type: string}, {type: number}]}
+      responses:
+        '201': {$ref: '#/components/responses/Success'}
+  /usdt/withdrawals:
+    post:
+      tags: [USDT]
+      operationId: confirmUsdtWithdrawal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quote_reference]
+              properties:
+                quote_reference: {type: string}
+      responses:
+        '201': {$ref: '#/components/responses/Success'}
+components:
+  securitySchemes:
+    hmacAuthorization:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: "Use: BLMPay-HMAC <PUBLIC_API_KEY>"
+    hmacTimestamp:
+      type: apiKey
+      in: header
+      name: X-BLMPay-Timestamp
+      description: Unix timestamp. Must be within the server's five-minute acceptance window.
+    hmacNonce:
+      type: apiKey
+      in: header
+      name: X-BLMPay-Nonce
+      description: Unique 16-100 character nonce. A nonce can be accepted only once per API key.
+    hmacSignature:
+      type: apiKey
+      in: header
+      name: X-BLMPay-Signature
+      description: "Lowercase hex HMAC-SHA256 of METHOD\nREQUEST_TARGET\nTIMESTAMP\nNONCE\nSHA256(raw_body)."
+  parameters:
+    Reference:
+      name: reference
+      in: path
+      required: true
+      schema: {type: string}
+    Limit:
+      name: limit
+      in: query
+      schema: {type: integer, minimum: 1, maximum: 100, default: 20}
+    Offset:
+      name: offset
+      in: query
+      schema: {type: integer, minimum: 0, default: 0}
+    IdempotencyKeyOptional:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: {type: string, minLength: 8, maxLength: 30}
+    IdempotencyKeyRequired:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: {type: string, minLength: 8, maxLength: 100}
+  schemas:
+    CreatePaymentRequest:
+      type: object
+      required: [payment_type, details]
+      properties:
+        payment_type: {type: string, enum: [mobile, card, dynamic-qr]}
+        phone_number: {type: string}
+        customer_name: {type: string}
+        customer_email: {type: string, format: email}
+        first_name: {type: string}
+        last_name: {type: string}
+        description: {type: string}
+        webhook_url: {type: string, format: uri}
+        metadata: {type: object, additionalProperties: true}
+        customer: {type: object, additionalProperties: true}
+        details:
+          type: object
+          required: [amount]
+          properties:
+            amount: {type: integer, minimum: 500}
+            currency: {type: string, enum: [TZS], default: TZS}
+          additionalProperties: true
+      additionalProperties: true
+    CreatePaymentLinkRequest:
+      type: object
+      required: [title]
+      properties:
+        title: {type: string}
+        description: {type: string}
+        amount: {type: integer, nullable: true}
+        allow_custom_amount: {type: boolean}
+        min_amount: {type: integer, default: 500}
+        max_amount: {type: integer, default: 1000000}
+        allowed_methods:
+          type: array
+          items: {type: string, enum: [mobile_money, card, qr]}
+    CreateInvoiceRequest:
+      type: object
+      required: [items]
+      properties:
+        customer_name: {type: string}
+        customer_email: {type: string, format: email}
+        customer_phone: {type: string}
+        tax_percent: {type: number, minimum: 0}
+        payment_mode: {type: string, enum: [automatic, manual, both], default: automatic}
+        due_date: {type: string}
+        expires_at: {type: string}
+        notes: {type: string}
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [name, unit_price]
+            properties:
+              name: {type: string}
+              quantity: {type: integer, minimum: 1, default: 1}
+              unit_price: {type: integer, minimum: 0}
+    PayoutLookupRequest:
+      type: object
+      required: [channel]
+      properties:
+        channel: {type: string, enum: [mobile, bank, selcompesa]}
+        account_number: {type: string}
+        phone_number: {type: string}
+        wallet_number: {type: string}
+        bank_code: {type: string}
+    CreatePayoutRequest:
+      type: object
+      required: [amount, channel]
+      properties:
+        amount: {type: integer, minimum: 1}
+        currency: {type: string, enum: [TZS], default: TZS}
+        channel: {type: string, enum: [mobile, bank, selcompesa]}
+        recipient_phone: {type: string}
+        wallet_number: {type: string}
+        network: {type: string}
+        recipient_bank: {type: string}
+        recipient_account: {type: string}
+        recipient_name: {type: string, description: Compatibility field; BLMPay performs its own recipient lookup.}
+        narration: {type: string, maxLength: 300}
+        webhook_url: {type: string, format: uri}
+        metadata: {type: object, additionalProperties: true}
+      additionalProperties: false
+    CreateWebhookRequest:
+      type: object
+      required: [url]
+      properties:
+        name: {type: string}
+        url: {type: string, format: uri, pattern: '^https://'}
+        events:
+          type: array
+          items:
+            type: string
+            enum: [payment.completed, payment.failed, payment.voided, payment.expired, payout.completed, payout.failed, payout.reversed, usdt.received]
+  responses:
+    Success:
+      description: Successful BLMPay API response.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: true
+    Error:
+      description: BLMPay API error.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status: {type: string, example: error}
+              code: {type: integer}
+              error_code: {type: string}
+              message: {type: string}
+            additionalProperties: true
