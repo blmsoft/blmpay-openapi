@@ -3,7 +3,9 @@ info:
   title: BLMPay REST API
   version: 1.1.0
   description: |
-    Official BLMPay merchant API for collections, payouts, payment links, invoices, webhooks and USDT.
+    DEPRECATED: BLMPay API v1 is legacy and is scheduled to be retired on 15 November 2026 at 23:59 EAT. Migrate to API v2 HMAC before this date.
+
+    Official BLMPay merchant API v1 for collections, payouts, payment links, invoices, webhooks and USDT.
 
     Authentication uses a BLMPay API key in the Authorization Bearer header.
     API keys may also be domain-bound. For a domain-bound server-to-server key,
@@ -14,6 +16,9 @@ servers:
   - url: https://pay.blmtec.co.tz/api/v1
 security:
   - bearerAuth: []
+x-blmpay-deprecated: true
+x-blmpay-sunset: '2026-11-15T23:59:59+03:00'
+x-blmpay-successor: https://pay.blmtec.co.tz/api/v2
 x-blmpay-domain-bound-api-keys:
   header: X-BLMPay-Origin
   requiredWhen: API key has an allowed domain configured and request has no usable Origin/Referer header
