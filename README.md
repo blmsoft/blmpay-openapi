@@ -6,12 +6,14 @@ Official OpenAPI 3.1 specifications for BLMPay API v2 and legacy v1.
 
 This repository is the public source of truth for BLMPay developer-facing endpoints, authentication, request/response schemas, webhooks, payment flows, payout flows, payment links, invoices and USDT APIs.
 
-## Specification
+## Specifications
 
-- `blmpay-v1.yaml` — BLMPay API v1 OpenAPI 3.1 document.
-- Base URL: `https://pay.blmtec.co.tz/api/v1`
-- Authentication: `Authorization: Bearer <BLMPay_API_KEY>`.
+- `blmpay-v2.yaml` — current BLMPay API v2 OpenAPI 3.1 document.
+- V2 Base URL: `https://pay.blmtec.co.tz/api/v2`
+- V2 authentication: HMAC-SHA256 using public API key + HMAC secret + timestamp + nonce + SHA-256 body hash.
+- `blmpay-v1.yaml` — legacy API v1 document retained only for migration until **15 November 2026 at 23:59 EAT**.
 
+New integrations must use v2.
 ## Domain-bound API keys
 
 BLMPay API keys may be restricted to an HTTPS integration domain. Browser requests can be identified through `Origin`/`Referer`. Server-to-server integrations using a domain-bound key must send:
